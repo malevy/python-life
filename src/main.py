@@ -1,9 +1,6 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 from array import *
+from tkinter import *
 
 ALIVE = 1
 DEAD = 0
@@ -32,9 +29,20 @@ def evolve(universe: list[list[int]]):
             for rIndex in OFFSETS:
                 for cIndex in OFFSETS:
                     if not (rIndex == 0 and cIndex == 0):
-                        if (r + rIndex) >= 0 and (c + cIndex) >= 0:
-                            if (r + rIndex) < rowCount and (c + cIndex) < colCount:
-                                totalAlive += universe[r+rIndex][c+cIndex]
+                        rowTemp = r + rIndex
+                        colTemp = c + cIndex
+
+                        if (r + rIndex) < 0:
+                            rowTemp = rowCount-1
+                        elif (r + rIndex) >= rowCount:
+                            rowTemp = 0
+
+                        if (c + cIndex) < 0:
+                            colTemp = colCount-1
+                        elif (c + cIndex) >= colCount:
+                            colTemp = 0
+
+                        totalAlive += universe[rowTemp][colTemp]
 
             newUniverse[r][c] = evolveCell(universe[r][c], totalAlive)
 
@@ -51,14 +59,23 @@ def evolveCell(cellState: int, total_alive: int):
         return cellState
 
 def printUniverse(universe: list[list[int]]):
-    converter = lambda cell: "*" if cell == 1 else "_"
+    converter = lambda cell: " # " if cell == 1 else " _ "
+    rowNum: int = 0
     for row in universe:
-        print(" ".join(map(converter, row)))
+        renderedRow = " ".join(map(converter, row))
+        Label(window, text=renderedRow).grid(row=rowNum, column=0)
+        rowNum=rowNum+1
 
+def nextGeneration(universe):
+    nextGen = evolve(universe)
+    printUniverse(nextGen)
+    window.after(100, lambda: nextGeneration(nextGen))
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    u = makeUniverse(10,10)
+    window = Tk()
+
+    u = makeUniverse(25,75)
     u[1][2] = 1
     u[2][3] = 1
     u[3][1] = 1
@@ -66,10 +83,5 @@ if __name__ == '__main__':
     u[3][3] = 1
     # u[1][2] = 1
 
-    printUniverse(u)
-    print("\n")
-
-    for _ in range(100):
-        u = evolve(u)
-        printUniverse(u)
-        print("\n")
+    nextGeneration(u)
+    window.mainloop()
